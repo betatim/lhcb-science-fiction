@@ -1,5 +1,5 @@
 # SetupProject brunel v47r0
-
+#betatim rocks
 import glob
 
 from Configurables import Brunel, LHCbApp, CondDB
