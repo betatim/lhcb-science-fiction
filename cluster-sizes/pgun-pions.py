@@ -1,4 +1,5 @@
 # SetupProject boole v28r2p1
+from collections import namedtuple
 
 import GaudiPython as GP
 from GaudiConf import IOHelper
@@ -16,6 +17,7 @@ Track = GP.gbl.LHCb.Track
 MCHit = GP.gbl.LHCb.MCHit
 Cluster = GP.gbl.LHCb.VPCluster
 FTChannelID = GP.gbl.LHCb.FTChannelID
+MyCluster = namedtuple("MyCluster", "size adcCount position")
 
 stereo = 5
 
@@ -44,7 +46,8 @@ appConf.TopAlg += [#"PrPixelTracking", "PrPixelStoreClusters",
 
 from Configurables import MCFTDigitCreator
 MCFTDigitCreator().IntegrationOffset = [0,2,4]
-MCFTDigitCreator().SimulateNoise = True
+#MCFTDigitCreator().SimulateNoise = True
+MCFTDigitCreator().SiPMGain = sipm_gain = 10.
 
 s = SimConf()
 SimConf().Detectors = ['VP', 'UT', 'FT', 'Rich1Pmt', 'Rich2Pmt', 'Ecal', 'Hcal', 'Muon']
@@ -73,7 +76,12 @@ def cluster2mc_particles(cluster, event):
     mc_particles = event['MC/Particles']
     next_idx = -1
     particles = []
-    cluster_channel = cluster.channelID().channelID()
+    if isinstance(cluster, MyCluster):
+        cluster_channel = cluster.position
+        
+    else:
+        cluster_channel = cluster.channelID().channelID()
+    
     for channel, key in links.keyIndex():
         if channel == cluster_channel:
             particles.append(mc_particles.object(refs[key].objectKey()))
@@ -123,6 +131,45 @@ def cluster_neighbourhood(cluster, width=10):
         
     return near_digits
 
+def make_clusters(digits):
+    """Form clusters from `digits`"""
+    # thresholds in terms of photo electrons
+    # digits give ADC which you divide by
+    # sipm_gain to get PE
+    seed = 1.5
+    neighbour = 0.5
+
+    clusters = []
+    current = []
+    for digit in digits:
+        if current:
+            # keep adding to current cluster
+            if (digit.adcCount()/sipm_gain > neighbour and
+                digit.channelID().channelID() == current[-1].channelID().channelID()+1):
+                current.append(digit)
+
+            # check if at least one digit exceeds seed threshold
+            # and then finalise the cluster
+            else:
+                if any(d.adcCount() > seed for d in current):
+                    adc_sum = 0
+                    channel_sum = 0
+                    for d in current:
+                        adc_sum += d.adcCount()
+                        channel_sum += d.channelID().channelID()
+                        
+                    clusters.append(MyCluster(len(current),
+                                              adc_sum,
+                                              channel_sum/len(current)))
+                    current = []
+
+        # start a new cluster
+        else:
+            if digit.adcCount()/sipm_gain > neighbour:
+                current.append(digit)
+
+    return clusters
+
 
 # Configuration done, run time!
 appMgr = GP.AppMgr()
@@ -132,25 +179,36 @@ R.gROOT.ProcessLine(".x lhcbstyle2.C")
 
 digit_adcs = R.TH1F("", ";channel ADC count;entries", 105,-5, 100)
 cluster_size = R.TH1F("", ";cluster size;entries", 10,-0.5, 9.5)
-cluster_adc_sum = R.TH1F("", ";cluster ADC sum;entries", 105,-5, 100)
+cluster_adc_sum = R.TH1F("", ";cluster ADC sum [pe];entries", 105,-5, 100)
 neighbourhood_size = R.TH1F("", ";neighbourhood size;entries", 21,-0.5, 20.5)
+
+my_cluster_size = R.TH1F("", ";cluster size;entries", 10,-0.5, 9.5)
+my_cluster_adc_sum = R.TH1F("", ";cluster ADC sum [pe];entries", 105,-5, 100)
 
 # Make a few plots showing the digits
 # in the neighbourhood of a cluster
 detailed_clusters = []
 n_detailed = 10
 
-for n in xrange(300):
+my_detailed_clusters = []
+my_n_detailed = 10
+
+for n in xrange(100):
     appMgr.run(1)
 
     digits = evt['/Event/MC/FT/Digits'].containedObjects()
     for digit in digits:
         digit_adcs.Fill(digit.adcCount())
+
+    my_clusters = make_clusters(digits)
+    for cluster in my_clusters:
+        if keep_cluster(cluster):
+            my_cluster_adc_sum.Fill(cluster.adcCount/sipm_gain)
+            my_cluster_size.Fill(cluster.size)
     
     clusters = evt['/Event/Raw/FT/Clusters'].containedObjects()
     for cluster in clusters:
         if keep_cluster(cluster):
-        #if pion_gun_cluster(cluster):
             cluster_adc_sum.Fill(cluster.charge())
             cluster_size.Fill(cluster.size())
         
@@ -161,12 +219,14 @@ for n in xrange(300):
             if len(detailed_clusters) < n_detailed:
                 # shift all channel IDs by the channel ID of the cluster
                 channel = cluster.channelID().channelID()
-                h = R.TH1F("", ";neighbouring channels;ADC count", 21,-10.5, +10.5)
+                h = R.TH1F("", ";neighbouring channels;ADC count [pe]",
+                           21,-10.5, +10.5)
                 detailed_clusters.append(h)
 
                 for digit in digits:
                     digit_chan = digit.channelID()
-                    h.Fill(digit_chan.channelID() - channel, digit.adcCount())
+                    h.Fill(digit_chan.channelID() - channel,
+                           digit.adcCount()/sipm_gain)
                     #print digit_chan.channelID(), digit_chan.sipmId(), digit_chan.sipmCell(), "="*digit.adcCount()
 
             #print "-"*60
@@ -195,6 +255,22 @@ c.RedrawAxis()
 c.SaveAs("cluster_size.pdf")
 c.SaveAs("cluster_size.png")
 
+cluster_size.Draw()
+my_cluster_size.SetLineColor(R.kRed)
+my_cluster_size.Draw("same")
+c.RedrawAxis()
+c.SaveAs("my_cluster_size.pdf")
+c.SaveAs("my_cluster_size.png")
+
+my_cluster_adc_sum.Draw()
+c.RedrawAxis()
+c.SaveAs("my_cluster_adc_sum.pdf")
+c.SaveAs("my_cluster_adc_sum.png")
+
 for n,h in enumerate(detailed_clusters):
     h.Draw()
     c.SaveAs("detailed_%i.png"%(n))
+
+for n,h in enumerate(my_detailed_clusters):
+    h.Draw()
+    c.SaveAs("my_detailed_%i.png"%(n))
