@@ -13,7 +13,7 @@ sys.path.append(local_dir)
 from common import set_tags
 
       
-def execute(evt_type, stereo):
+def execute(evt_type=None, stereo=5):
   importOptions("$APPCONFIGOPTS/Boole/Default.py")
   importOptions("$APPCONFIGOPTS/Boole/Boole-Upgrade-Baseline-20131029.py")
   #importOptions("$APPCONFIGOPTS/Boole/patchUpgrade1.py")
