@@ -1,4 +1,5 @@
 # SetupProject boole v28r2p1
+# SetupProject Boole v29r1p1
 from collections import namedtuple
 
 import GaudiPython as GP
@@ -94,6 +95,31 @@ def cluster2mc_particles(cluster, event):
 
     return particles
 
+def cluster2mc_hits(cluster, event):
+    links = event['/Event/Link/Raw/FT/Clusters2MCHits']
+    refs = links.linkReference()
+    mc_hits = event['/Event/MC/FT/Hits']
+    next_idx = -1
+    hits = []
+    if isinstance(cluster, MyCluster):
+        cluster_channel = cluster.position
+        
+    else:
+        cluster_channel = cluster.channelID().channelID()
+    
+    for channel, key in links.keyIndex():
+        if channel == cluster_channel:
+            hits.append(mc_hits[refs[key].objectKey()])
+            next_idx = refs[key].nextIndex()
+            break
+
+    while next_idx != -1:
+        hits.append(mc_hits[refs[next_idx].objectKey()])
+        next_idx = refs[next_idx].nextIndex()
+
+    return hits
+
+
 def rad2deg(rad):
     return 180 * rad / 3.1415
 
@@ -174,9 +200,12 @@ def make_clusters(digits):
 # Configuration done, run time!
 appMgr = GP.AppMgr()
 evt = appMgr.evtsvc()
+det = appMgr.detsvc()
+ft_det = det['/dd/Structure/LHCb/AfterMagnetRegion/T/FT']
 
 R.gROOT.ProcessLine(".x lhcbstyle2.C")
 
+mchit_pos = R.TH2F("", ";x [mm];y [mm]", 100,0,2000, 100,0,2540)
 digit_adcs = R.TH1F("", ";channel ADC count;entries", 105,-5, 100)
 cluster_size = R.TH1F("", ";cluster size;entries", 10,-0.5, 9.5)
 cluster_adc_sum = R.TH1F("", ";cluster ADC sum [pe];entries", 105,-5, 100)
@@ -185,6 +214,12 @@ neighbourhood_size = R.TH1F("", ";neighbourhood size;entries", 21,-0.5, 20.5)
 my_cluster_size = R.TH1F("", ";cluster size;entries", 10,-0.5, 9.5)
 my_cluster_adc_sum = R.TH1F("", ";cluster ADC sum [pe];entries", 105,-5, 100)
 
+laurel = R.TH1F("", ";delta MCx - Clusterx;", 100, -2, 2)
+hardy = R.TH1F("", ";delta MCx - Clusterx;", 100, -2, 2)
+
+laurel1 = R.TH1F("", ";delta MCx - Clusterx;", 100, -2, 2)
+hardy1 = R.TH1F("", ";delta MCx - Clusterx;", 100, -2, 2)
+
 # Make a few plots showing the digits
 # in the neighbourhood of a cluster
 detailed_clusters = []
@@ -192,6 +227,7 @@ n_detailed = 10
 
 my_detailed_clusters = []
 my_n_detailed = 10
+
 
 for n in xrange(100):
     appMgr.run(1)
@@ -205,9 +241,26 @@ for n in xrange(100):
         if keep_cluster(cluster):
             my_cluster_adc_sum.Fill(cluster.adcCount/sipm_gain)
             my_cluster_size.Fill(cluster.size)
-    
+            
     clusters = evt['/Event/Raw/FT/Clusters'].containedObjects()
     for cluster in clusters:
+        mchits = cluster2mc_hits(cluster, evt)
+        if mchits and keep_cluster(cluster):
+            mchit = mchits[0]
+            mchit_x = mchit.entry().x()
+            mchit_y = mchit.entry().y()
+            mchit_pos.Fill(mchit_x, mchit_y)
+            mat = ft_det.findFibreMat(cluster.channelID())
+            det_segment = mat.createDetSegment(cluster.channelID(),
+                                               cluster.fraction())
+
+            cluster_x = det_segment.x(mchit_y)
+            dX = mchit_x - cluster_x
+            if mat.angle() == 0.:
+                laurel.Fill(dX)
+            else:
+                hardy.Fill(dX)
+            
         if keep_cluster(cluster):
             cluster_adc_sum.Fill(cluster.charge())
             cluster_size.Fill(cluster.size())
@@ -234,6 +287,35 @@ for n in xrange(100):
 c = R.TCanvas("wer", "wie was", 615,615)
 c.SetLeftMargin(0.16)
 c.SetTopMargin(0.03)
+
+laurel.Draw()
+print "laurel (0deg, x layer) mean:", laurel.GetMean()
+c.RedrawAxis()
+c.SaveAs("laurel.pdf")
+c.SaveAs("laurel.png")
+
+hardy.Draw()
+print "hardy (u,v layer) mean:", hardy.GetMean()
+c.RedrawAxis()
+c.SaveAs("hardy.pdf")
+c.SaveAs("hardy.png")
+
+laurel1.Draw()
+print "laurel1 (0deg, x layer) mean:", laurel1.GetMean()
+c.RedrawAxis()
+c.SaveAs("laurel1.pdf")
+c.SaveAs("laurel1.png")
+
+hardy1.Draw()
+print "hardy1 (u,v layer) mean:", hardy1.GetMean()
+c.RedrawAxis()
+c.SaveAs("hardy1.pdf")
+c.SaveAs("hardy1.png")
+
+mchit_pos.Draw("colz")
+c.RedrawAxis()
+c.SaveAs("mchit_pos.pdf")
+c.SaveAs("mchit_pos.png")
 
 neighbourhood_size.Draw()
 c.RedrawAxis()
@@ -268,9 +350,9 @@ c.SaveAs("my_cluster_adc_sum.pdf")
 c.SaveAs("my_cluster_adc_sum.png")
 
 for n,h in enumerate(detailed_clusters):
-    h.Draw()
+    h.Draw("hist")
     c.SaveAs("detailed_%i.png"%(n))
 
 for n,h in enumerate(my_detailed_clusters):
-    h.Draw()
+    h.Draw("hist")
     c.SaveAs("my_detailed_%i.png"%(n))
