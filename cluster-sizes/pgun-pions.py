@@ -48,7 +48,7 @@ appConf.TopAlg += [#"PrPixelTracking", "PrPixelStoreClusters",
 from Configurables import MCFTDigitCreator
 MCFTDigitCreator().IntegrationOffset = [0,2,4]
 #MCFTDigitCreator().SimulateNoise = True
-MCFTDigitCreator().SiPMGain = sipm_gain = 10.
+MCFTDigitCreator().SiPMGain = sipm_gain = 10. * 10
 
 s = SimConf()
 SimConf().Detectors = ['VP', 'UT', 'FT', 'Rich1Pmt', 'Rich2Pmt', 'Ecal', 'Hcal', 'Muon']
@@ -207,7 +207,8 @@ R.gROOT.ProcessLine(".x lhcbstyle2.C")
 
 mchit_pos = R.TH2F("", ";x [mm];y [mm]", 100,0,2000, 100,0,2540)
 digit_adcs = R.TH1F("", ";channel ADC count;entries", 105,-5, 100)
-cluster_size = R.TH1F("", ";cluster size;entries", 10,-0.5, 9.5)
+digit_pes = R.TH1F("PEs", ";Photo electrons;", 100, 0.5, 4)
+cluster_size = R.TH1F("clusters", ";cluster size;entries", 10,-0.5, 9.5)
 cluster_adc_sum = R.TH1F("", ";cluster ADC sum [pe];entries", 105,-5, 100)
 neighbourhood_size = R.TH1F("", ";neighbourhood size;entries", 21,-0.5, 20.5)
 
@@ -235,6 +236,7 @@ for n in xrange(100):
     digits = evt['/Event/MC/FT/Digits'].containedObjects()
     for digit in digits:
         digit_adcs.Fill(digit.adcCount())
+        digit_pes.Fill(digit.adcCount()/sipm_gain)
 
     my_clusters = make_clusters(digits)
     for cluster in my_clusters:
@@ -327,6 +329,11 @@ c.RedrawAxis()
 c.SaveAs("digit_adcs.pdf")
 c.SaveAs("digit_adcs.png")
 
+digit_pes.Draw()
+c.RedrawAxis()
+c.SaveAs("digit_pes.pdf")
+c.SaveAs("digit_pes.png")
+
 cluster_adc_sum.Draw()
 c.RedrawAxis()
 c.SaveAs("cluster_adc_sum.pdf")
@@ -336,6 +343,7 @@ cluster_size.Draw()
 c.RedrawAxis()
 c.SaveAs("cluster_size.pdf")
 c.SaveAs("cluster_size.png")
+c.SaveAs("cluster_size.C")
 
 cluster_size.Draw()
 my_cluster_size.SetLineColor(R.kRed)
@@ -356,3 +364,24 @@ for n,h in enumerate(detailed_clusters):
 for n,h in enumerate(my_detailed_clusters):
     h.Draw("hist")
     c.SaveAs("my_detailed_%i.png"%(n))
+
+
+f = R.TFile("/afs/cern.ch/user/b/bleverin/public/00degrees_0cm_withmirror.root")
+t = f.adjustedtree
+ph = R.TH1F("ph", "", 100,0.5,4)
+for e in t:
+    for adc in e.adc_of_channel:
+        ph.Fill(adc)
+
+for h in (digit_pes, ph):
+    h.Scale(1./h.Integral())
+    
+digit_pes.SetLineColor(R.kRed)
+digit_pes.GetYaxis().SetRangeUser(10**-3, 3*(10**-1))
+digit_pes.Draw()
+ph.Draw("same")
+c.SetLogy()
+c.RedrawAxis()
+c.SaveAs("PEs.pdf")
+c.SaveAs("PEs.png")
+c.SaveAs("PEs.C")

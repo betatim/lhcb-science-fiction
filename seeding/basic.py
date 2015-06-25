@@ -1,3 +1,5 @@
+# n=0;for f in `cat ~/w/private/sipm-simulation/jobs/stereo-5.lfns`; do echo $n $f; dirac-dms-get-file $f; mv /tmp/thead/stereo-5/Stereo_13104021-Extended.digi $n.digi; let n=n+1;done
+
 # SetupProject brunel v47r0
 #betatim rocks
 import glob
