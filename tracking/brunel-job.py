@@ -7,21 +7,9 @@ from GaudiConf import IOHelper
 import Gaudi.Configuration as GC
 
 
-##############################################################################
-# File for running Brunel on MC data and saving all MC Truth
-# DataType should be set separately
-#
-# Syntax is:
-# gaudirun.py Brunel/MC-WithTruth.py Conditions/<someTag>.py <someDataFiles>.py
-##############################################################################
-
-from Configurables import Brunel
-from Configurables import Brunel, CondDB
-
-Brunel().WithMC    = True   # implies also Brunel().Simulation = True
-Brunel().Simulation = True
-
+# Fix weird DB error that appeared once we started data taking in 2015
 CondDB().Upgrade = True
+CondDB().LoadCALIBDB = 'HLT1'
 
 Brunel().Detectors = ['VP', 'UT', 'FT', 'Rich1Pmt', 'Rich2Pmt', 'Ecal', 'Hcal', 'Muon', 'Magnet', 'Tr' ]
 Brunel().DataType     = "Upgrade"
@@ -29,17 +17,23 @@ Brunel().DataType     = "Upgrade"
 LHCbApp().DDDBtag = "dddb-20150424"
 LHCbApp().CondDBtag = "sim-20140204-vc-md100"
       
-RecMoniConf().MoniSequence = []
+#RecMoniConf().MoniSequence = []
 
-Brunel().RecoSequence = ["L0", "HLT"]
+from Configurables import TrackSys
+TrackSys().TrackTypes = ["Velo","Forward","Seeding"]
+
+Brunel().RecoSequence = ["Decoding", "Tr"]
 Brunel().MCLinksSequence = ["Unpack", "Tr"]
 Brunel().MCCheckSequence = ["Pat"]
 Brunel().OutputType = "NONE"
 Brunel().InputType = "XDST"
 Brunel().WithMC = True
-Brunel().PrintFreq = 100
 Brunel().Simulation = True
-Brunel().EvtMax = 50
+Brunel().PrintFreq = 100
+Brunel().EvtMax = 20
+# ???????
+Brunel().SplitRawEventInput  = 4.1
+
 
 MessageSvc().Format = '% F%20W%S%7W%R%T %0W%M'
 
@@ -47,7 +41,7 @@ from Configurables import RecMoniConf
 RecMoniConf().MoniSequence = []
 
 from Configurables import L0Conf
-L0Conf().EnsureKnownTCK=False
+#L0Conf().EnsureKnownTCK=False
 
 
 # Change algorithm for ROOT compression of output files
@@ -57,23 +51,28 @@ L0Conf().EnsureKnownTCK=False
 from Configurables import RootCnvSvc
 RootCnvSvc().GlobalCompression = "ZLIB:1"
 
-
 import glob
 input_files = glob.glob("/tmp/thead/*.xdst")
 IOHelper("ROOT").inputFiles(input_files)
 
 def setup_mc_truth_matching():
+    from Configurables import PrPixelTracking, PrForwardTracking, PrPixelHitManager
+    PrPixelTracking().OutputLevel = 3
+    PrPixelHitManager().OutputLevel =2
+    #PrForwardTracking().OutputLevel = 2
     GaudiSequencer("CaloBanksHandler").Members = []
     GaudiSequencer("DecodeTriggerSeq").Members = []
     GaudiSequencer("MCLinksTrSeq").Members = ["VPClusterLinker",
                                               "PrLHCbID2MCParticle",
-                                              "PrTrackAssociator"]
-    GaudiSequencer("CheckPatSeq" ).Members = ["PrChecker"]
+                                              "PrTrackAssociator", "PrChecker"]
+    #GaudiSequencer("CheckPatSeq" ).Members = ["PrChecker"]
 
     from Configurables import PrLHCbID2MCParticle
     #PrLHCbID2MCParticle().OutputLevel = 2
-    PrTrackAssociator().RootOfContainers = "/Event/Rec/Track"
+    #PrTrackAssociator().RootOfContainers = "Rec/Track"
+    #PrTrackAssociator().OutputLevel = 2
 
+    #PrChecker().OutputLevel = 2
     PrChecker().TriggerNumbers = True
     PrChecker().Eta25Cut = True
     PrChecker().WriteVeloHistos = 2
