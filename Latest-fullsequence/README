@@ -1,0 +1,5 @@
+The sequence is the baseline example to run the full simulation starting from the event generation.
+Feel free to change the event type in the Gauss Option.
+The scripts fake the production , digitisation and reconstruction made by the latest production (sim+std://MC/Upgrade/Beam7000GeV-Upgrade-MagDown-Nu7.6-25ns-Pythia8/Sim08h-NoRichSpill/Reco15U2)
+
+If you want to adapt it to local DDDB or test of different version of Brunel/Boole change the option file and provide a new set of option file to do so for fair comparisons of "Default" to "With Changes"
