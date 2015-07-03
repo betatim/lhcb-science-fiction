@@ -62,7 +62,8 @@ def setup_mc_truth_matching():
         GaudiSequencer("Reco%sSeq"%name).Members = []
         GaudiSequencer("Check%sSeq"%name).Members = []
 
-    GaudiSequencer("MCLinksTrSeq").Members = ["PrLHCbID2MCParticle",
+    GaudiSequencer("MCLinksTrSeq").Members = ["VPClusterLinker",
+                                              "PrLHCbID2MCParticle",
                                               "PrTrackAssociator", "PrChecker"]
 
     from Configurables import PrLHCbID2MCParticle

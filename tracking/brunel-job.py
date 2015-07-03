@@ -16,7 +16,7 @@ Brunel().DataType     = "Upgrade"
 
 LHCbApp().DDDBtag = "dddb-20150424"
 LHCbApp().CondDBtag = "sim-20140204-vc-md100"
-      
+
 #RecMoniConf().MoniSequence = []
 
 from Configurables import TrackSys
