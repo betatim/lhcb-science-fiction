@@ -30,7 +30,7 @@ Brunel().InputType = "XDST"
 Brunel().WithMC = True
 Brunel().Simulation = True
 Brunel().PrintFreq = 100
-Brunel().EvtMax = 20
+Brunel().EvtMax = 1000
 # ???????
 Brunel().SplitRawEventInput  = 4.1
 
@@ -57,22 +57,15 @@ IOHelper("ROOT").inputFiles(input_files)
 
 def setup_mc_truth_matching():
     from Configurables import PrPixelTracking, PrForwardTracking, PrPixelHitManager
-    PrPixelTracking().OutputLevel = 3
-    PrPixelHitManager().OutputLevel =2
-    #PrForwardTracking().OutputLevel = 2
     GaudiSequencer("CaloBanksHandler").Members = []
     GaudiSequencer("DecodeTriggerSeq").Members = []
     GaudiSequencer("MCLinksTrSeq").Members = ["VPClusterLinker",
                                               "PrLHCbID2MCParticle",
                                               "PrTrackAssociator", "PrChecker"]
-    #GaudiSequencer("CheckPatSeq" ).Members = ["PrChecker"]
 
     from Configurables import PrLHCbID2MCParticle
-    #PrLHCbID2MCParticle().OutputLevel = 2
     #PrTrackAssociator().RootOfContainers = "Rec/Track"
-    #PrTrackAssociator().OutputLevel = 2
 
-    #PrChecker().OutputLevel = 2
     PrChecker().TriggerNumbers = True
     PrChecker().Eta25Cut = True
     PrChecker().WriteVeloHistos = 2
