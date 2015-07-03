@@ -52,7 +52,7 @@ from Configurables import RootCnvSvc
 RootCnvSvc().GlobalCompression = "ZLIB:1"
 
 import glob
-input_files = glob.glob("/tmp/thead/*.xdst")
+input_files = glob.glob("/tmp/thead/june2015-*.xdst")
 IOHelper("ROOT").inputFiles(input_files)
 
 def setup_mc_truth_matching():
