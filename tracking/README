@@ -10,6 +10,10 @@ end of the DILBERT task force.
 
 Download a file from sim+std://MC/Upgrade/Beam7000GeV-Upgrade-MagDown-Nu7.6-25ns-Pythia8/Sim08c/Digi13/Reco14U4/13104013/XDST
 
+Run Boole v26r4 on this with `boole-reference-job.py`
+
+Run Brunel vXXrY on this with `brunel-reference-job.py`
+
 
 Brunel on June2015 samples
 --------------------------
