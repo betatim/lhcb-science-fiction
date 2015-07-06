@@ -38,7 +38,7 @@ def execute(eventType=13104013):
     if(eventType == 30000000):
         Decay='MinBias'
     # Information on colliding beams: momenta, crossing angles
-    # Mag up , change the md into mu
+    # Mag up , change the md into mu to switch magnet polarity (change it also in LHCbApp().CondDBtag)
     importOptions('$APPCONFIGOPTS/Gauss/Beam7000GeV-md100-nu7.6-HorExtAngle.py')
     #Option which enables spillover
     importOptions('$APPCONFIGOPTS/Gauss/EnableSpillover-25ns.py')
@@ -66,7 +66,7 @@ def execute(eventType=13104013):
     from Configurables import LHCbApp
     
 ####################################
-# TDR Tags
+# TDR Tags (are the tags for after TaskForce)
 
 #    LHCbApp().DDDBtag    = "dddb-20131025"
 # For magnet polarity 'down'
@@ -104,6 +104,7 @@ def execute(eventType=13104013):
 
 
 ###############
+# If you don't want to run it with Ganga uncomment the eventType and the execute() + change the EvtMax
 # Run Locally with lb-run Gauss v47r2 gaudirun.py Option.py
 # EvtType List:
 #eventType = 30000000
