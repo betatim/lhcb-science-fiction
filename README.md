@@ -13,3 +13,7 @@ To compare cluster properties between the test beam and the simulation
 look at `simulation/gauss-pgun-job.py` to create events and
 `cluster-sizes/pgun-pions.py` to analyse them.
 
+The `FullSequence/` folder contains the option files to do step by step (from the .sim file 
+to the Brunel tracking efficiency numbers) the conditions at the end of the TaskForce
+and the latest conditions (DDDB tags/FTDet changes/Digitisation changes). For debugging
+and for other applications. (Boole and Brunel missing at the moment).
