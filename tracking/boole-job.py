@@ -38,20 +38,23 @@ LHCbApp().DDDBtag = "dddb-20150424"
 LHCbApp().CondDBtag = "sim-20140204-vc-md100"
 # Fix weird DB error that appeared once we started data taking in 2015
 CondDB().LoadCALIBDB = 'HLT1'
+# We are 'reprocessing' a file from the BK
+#Boole().InputDataType = 'XDST'
 
 Boole().EvtMax = 10
 Boole().Outputs = ["DIGI"]
-# We are 'reprocessing' a file from the BK
-Boole().InputDataType = 'XDST'
 
 import glob
 from GaudiConf import IOHelper
-input_files = glob.glob("/tmp/thead/00045401_00000030_1.xdst")
+#input_files = glob.glob("/tmp/thead/00045401_00000030_1.xdst")
+input_files = glob.glob("/tmp/thead/Gauss-13104013-10ev-20150707.sim")
 IOHelper("ROOT").inputFiles(input_files)
 
 from Configurables import OutputStream
-OutputStream("DigiWriter").Output = "DATAFILE='PFN:/tmp/thead/june2015-nonoise.xdigi' TYP='POOL_ROOTTREE' OPT='REC'"
+OutputStream("DigiWriter").Output = "DATAFILE='PFN:/tmp/thead/june2015-withnoise-fromsim.xdigi' TYP='POOL_ROOTTREE' OPT='REC'"
 
+# The defaults are with noise and 2bitADC
+# uncomment the following if you want to turn it off
 #from Configurables import MCFTDigitCreator, SiPMResponse
 #MCFTDigitCreator().Force2bitADC = False
 #MCFTDigitCreator().SimulateNoise = False

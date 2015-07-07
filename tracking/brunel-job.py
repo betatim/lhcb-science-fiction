@@ -36,9 +36,9 @@ else:
 Brunel().WithMC = True
 Brunel().Simulation = True
 Brunel().PrintFreq = 1
-Brunel().EvtMax = 100
+Brunel().EvtMax = 10
 # ???????
-if True: #noise:
+if False:#noise:
     Brunel().SplitRawEventInput  = 4.1
 
 MessageSvc().Format = '% F%20W%S%7W%R%T %0W%M'
@@ -62,7 +62,9 @@ import glob
 if noise:
     input_files = glob.glob("/tmp/thead/00045401_00000030_1.xdst")
 else:
-    input_files = glob.glob("/tmp/thead/june2015-nonoise.xdigi")
+    #input_files = glob.glob("/tmp/thead/june2015-nonoise.xdigi")
+    #input_files = glob.glob("/tmp/thead/june2015-nonoise-fromsim.xdigi")
+    input_files = glob.glob("/tmp/thead/june2015-withnoise-fromsim.xdigi")
 
 IOHelper("ROOT").inputFiles(input_files)
 
