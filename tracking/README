@@ -25,3 +25,15 @@ Download a file from sim+std://MC/Upgrade/Beam7000GeV-Upgrade-MagDown-Nu7.6-25ns
 
 You can run Brunel with the option file `brunel-job.py`. Make
 sure to edit the input file location.
+
+
+Full chain for June2015
+-----------------------
+
+To run the full simulation chain you can use the following
+option files: gauss-job.py, boole-job.py, brunel-job.py
+
+Gauss v47r2
+Boole v29r6
+Brunel v47r6p1 (need Pr/PrPixel revision r191270)
+
