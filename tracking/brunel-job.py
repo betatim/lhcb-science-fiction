@@ -7,6 +7,8 @@ from GaudiConf import IOHelper
 import Gaudi.Configuration as GC
 
 
+noise = False
+
 # Fix weird DB error that appeared once we started data taking in 2015
 CondDB().Upgrade = True
 CondDB().LoadCALIBDB = 'HLT1'
@@ -26,14 +28,18 @@ Brunel().RecoSequence = ["Decoding", "Tr"]
 Brunel().MCLinksSequence = ["Unpack", "Tr"]
 Brunel().MCCheckSequence = ["Pat"]
 Brunel().OutputType = "NONE"
-Brunel().InputType = "XDST"
+if noise:
+    Brunel().InputType = "XDST"
+else:
+    Brunel().InputType = "DIGI"
+
 Brunel().WithMC = True
 Brunel().Simulation = True
-Brunel().PrintFreq = 100
-Brunel().EvtMax = 1000
+Brunel().PrintFreq = 1
+Brunel().EvtMax = 100
 # ???????
-Brunel().SplitRawEventInput  = 4.1
-
+if True: #noise:
+    Brunel().SplitRawEventInput  = 4.1
 
 MessageSvc().Format = '% F%20W%S%7W%R%T %0W%M'
 
@@ -52,7 +58,12 @@ from Configurables import RootCnvSvc
 RootCnvSvc().GlobalCompression = "ZLIB:1"
 
 import glob
-input_files = glob.glob("/tmp/thead/june2015-*.xdst")
+
+if noise:
+    input_files = glob.glob("/tmp/thead/00045401_00000030_1.xdst")
+else:
+    input_files = glob.glob("/tmp/thead/june2015-nonoise.xdigi")
+
 IOHelper("ROOT").inputFiles(input_files)
 
 def setup_mc_truth_matching():
