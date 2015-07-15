@@ -36,7 +36,7 @@ else:
 Brunel().WithMC = True
 Brunel().Simulation = True
 Brunel().PrintFreq = 1
-Brunel().EvtMax = 10
+#Brunel().EvtMax = 100
 # ???????
 if False:#noise:
     Brunel().SplitRawEventInput  = 4.1
@@ -57,16 +57,16 @@ from Configurables import L0Conf
 from Configurables import RootCnvSvc
 RootCnvSvc().GlobalCompression = "ZLIB:1"
 
-import glob
+#import glob
+#if noise:
+#    input_files = glob.glob("/tmp/thead/00045401_00000030_1.xdst")
+#else:
+#    #input_files = glob.glob("/tmp/thead/june2015-nonoise.xdigi")
+#    #input_files = glob.glob("/tmp/thead/june2015-nonoise-fromsim.xdigi")
+#    #input_files = glob.glob("/tmp/thead/june2015-withnoise-fromsim.xdigi")
+#    input_files = glob.glob("/tmp/thead/june2015-fromsim-True-True-False.xdigi")
 
-if noise:
-    input_files = glob.glob("/tmp/thead/00045401_00000030_1.xdst")
-else:
-    #input_files = glob.glob("/tmp/thead/june2015-nonoise.xdigi")
-    #input_files = glob.glob("/tmp/thead/june2015-nonoise-fromsim.xdigi")
-    input_files = glob.glob("/tmp/thead/june2015-withnoise-fromsim.xdigi")
-
-IOHelper("ROOT").inputFiles(input_files)
+#IOHelper("ROOT").inputFiles(input_files)
 
 def setup_mc_truth_matching():
     from Configurables import PrPixelTracking, PrForwardTracking, PrPixelHitManager
