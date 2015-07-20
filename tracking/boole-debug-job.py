@@ -35,20 +35,8 @@ def execute(noise=True,
     LHCbApp().CondDBtag = "sim-20140204-vc-md100"
     # Fix weird DB error that appeared once we started data taking in 2015
     CondDB().LoadCALIBDB = 'HLT1'
-    # We are 'reprocessing' a file from the BK
-    #Boole().InputDataType = 'XDST'
 
-    #Boole().EvtMax = 100
     Boole().Outputs = ["DIGI"]
-
-    import glob
-    from GaudiConf import IOHelper
-    #input_files = glob.glob("/tmp/thead/00045401_00000030_1.xdst")
-    input_files = glob.glob("/tmp/thead/Gauss-13104013-*ev-20150707.sim")
-    IOHelper("ROOT").inputFiles(input_files)
-
-    #from Configurables import OutputStream
-    #OutputStream("DigiWriter").Output = "DATAFILE='PFN:/tmp/thead/june2015-fromsim-%s-%s-%s.xdigi' TYP='POOL_ROOTTREE' OPT='REC'"%(noise,two_bit,new_response)
 
     # The defaults are with noise and 2bitADC
     # uncomment the following if you want to turn it off
@@ -56,6 +44,3 @@ def execute(noise=True,
     MCFTDigitCreator().Force2bitADC = two_bit
     MCFTDigitCreator().SimulateNoise = noise
     SiPMResponse().useNewResponse = new_response
-
-
-execute(False, False, 1)
