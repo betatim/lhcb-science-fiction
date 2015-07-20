@@ -16,7 +16,7 @@ if jobs(old).application.__class__ is not Gauss:
 
 old_job = jobs(old)
 
-j = Job(application=Boole(version="v29r6",
+j = Job(application=Boole(version="v29r4",
                           optsfile=local_dir + "/boole-debug-job.py",
                           extraopts="execute(%r, %r, %i)"%(bool(int(sys.argv[2])),
                                                            bool(int(sys.argv[3])),
@@ -30,7 +30,7 @@ j.backend = Dirac()
 
 j.splitter = SplitByFiles(filesPerJob=2)
 j.name = jobs(old).name
-j.comment = "Input from job %i, debugging FTDet v2r6"%(old)
+j.comment = "Input from job %i, debugging Gauss v47r1"%(old)
 
 if len(jobs(old).subjobs) == 0:
     j.inputdata = jobs(old).outputfiles

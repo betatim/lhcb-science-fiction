@@ -6,12 +6,12 @@ import os
 local_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 
 j = Job(application=Gauss(
-        version="v47r2",
+        version="v47r1",
         optsfile=local_dir + "/gauss-debug-job.py",
         ))
 
 j.name = "SciFi-tracking"
-j.comment = "Debugging FTDet v2r6"
+j.comment = "Debugging with older gauss release"
 j.outputfiles = [DiracFile("*.sim")]
 
 j.backend = Dirac()

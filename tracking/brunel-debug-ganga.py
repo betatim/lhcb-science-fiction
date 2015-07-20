@@ -16,7 +16,7 @@ if jobs(old).application.__class__ is not Boole:
 
 old_job = jobs(old)
 
-j = Job(application=Brunel(version="v47r6p1",
+j = Job(application=Brunel(version="v47r5",
                            optsfile=local_dir + "/brunel-debug-job.py",
                            #user_release_area='/afs/cern.ch/user/t/thead/git/lhcb-science-fiction/tracking'
                            )
@@ -25,7 +25,7 @@ j = Job(application=Brunel(version="v47r6p1",
 j.backend = Dirac()
 
 j.name = jobs(old).name
-j.comment = "Input from job %i debugging FTDet v2r6"%(old)
+j.comment = "Input from job %i debugging"%(old)
 
 if len(jobs(old).subjobs) == 0:
     j.inputdata = jobs(old).outputfiles
