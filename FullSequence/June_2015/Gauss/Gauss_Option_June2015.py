@@ -20,13 +20,13 @@ local_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe
 sys.path.append(local_dir)
 
 #Option = Decay+"_"+ str(eventType) +"_Upgrade_TDRtags_Spillover25_Py8_Upgrade_HorExtAngle_7000GeV_nu7.6"
-def execute(eventType=13104013):
+def execute(eventType=13104012): #Default one 
     if(eventType == 13104011):
         Decay='Bs_PhiPhi_DecProdCut'
-    if(eventType == 13104012):
+    if(eventType == 13104012): #Default Sample no pt>400MeV cut. Used also at the TDR and After Task Force.
         Decay='Bs_PhiPhi_CDFAmp_DecProdCut'                                                       
     if(eventType == 13104013):                                                                    
-        Decay='Bs_PhiPhi_CDFAmp_DecProdCut_hpt400'                                                
+        Decay='Bs_PhiPhi_CDFAmp_DecProdCut_hpt400' #Official production, noise studies.                                
     if(eventType == 13104015):                                                                    
         Decay='Bs_PhiPhi_flatLT'                                                                  
     if(eventType == 27165100):                                                                    
